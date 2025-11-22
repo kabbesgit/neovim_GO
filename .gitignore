@@ -1,0 +1,5 @@
+.state/nvim/lazy/pkg-cache.lua
+.state/nvim/log
+.nvimlog
+lazy-lock.json
+.stylua.toml
