@@ -4,8 +4,23 @@ return {
     build = ':TSUpdate',
     dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
     config = function()
-      local parser_dir = vim.fn.stdpath('state') .. '/treesitter'
-      vim.fn.mkdir(parser_dir, 'p')
+      local function first_writable(dirs)
+        for _, dir in ipairs(dirs) do
+          local ok = pcall(vim.fn.mkdir, dir, 'p')
+          if ok and vim.uv.fs_access(dir, 'RW') then
+            return dir
+          end
+        end
+      end
+
+      -- Pick a parser install dir that is actually writable (important when the
+      -- config runs in a sandboxed environment).
+      local parser_dir = first_writable({
+        vim.fn.stdpath('state') .. '/treesitter',
+        vim.fn.stdpath('cache') .. '/treesitter',
+        vim.fn.stdpath('config') .. '/.treesitter',
+      }) or vim.fn.stdpath('config')
+
       if not string.find(vim.o.runtimepath, parser_dir, 1, true) then
         vim.opt.runtimepath:append(parser_dir)
       end

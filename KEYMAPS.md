@@ -5,8 +5,11 @@ Leader: `<Space>`
 ## Go helpers
 - `<leader>mb` go build `./...` -> quickfix on errors; closes quickfix + notifies on success
 - `<leader>mr` go run `.` in bottom terminal (project root)
+- `<leader>td` debug nearest Go test (DAP Go)
+- `<leader>tD` debug last Go test (DAP Go)
 
 ## Files / search
+- `<leader>e` toggle Neo-tree at cwd
 - `<leader>ff` Snacks files picker
 - `<leader>fg` Snacks git files
 - `<leader>fr` recent files
@@ -43,8 +46,7 @@ Leader: `<Space>`
 
 ## Diagnostics / lists
 - `<leader>cd` diagnostic float; `<leader>q` loclist diagnostics; `<leader>nh` clear search
-- Trouble: `<leader>dx` workspace diag, `<leader>dw` workspace diag view, `<leader>dq` quickfix, `gR` references
-- Trouble (plugin maps): `<leader>xx` diagnostics, `<leader>xX` buffer diagnostics, `<leader>cs` symbols, `<leader>cl` LSP list, `<leader>xL` loclist, `<leader>xQ` qflist
+- Trouble: `<leader>xx` diagnostics, `<leader>xX` buffer diagnostics, `<leader>cs` symbols, `<leader>cl` LSP list, `<leader>xL` loclist, `<leader>xQ` qflist
 
 ## LSP
 - `gd` / `<leader>gd` goto definition (recenters)
@@ -63,6 +65,7 @@ Leader: `<Space>`
 - `<F5>` continue; `<F9>` breakpoint; `<F10>` step over; `<F11>` step into; `<S-F11>` step out; `<S-F5>` restart; `<C-F5>` stop
 
 ## Editing aids
+- Fusen sticky notes: `me` add/edit, `mc` clear, `mC` clear buffer, `mD` clear all, `mn` next, `mp` prev, `ml` list
 - Comment.nvim: `gc` toggle (n/x), `gcc` line, `gb` block, `gbc` block line
 - Copilot: `<S-Tab>` accept; `<C-n>` dismiss
 - Surround: `gsa` add; `gsd` delete; `gsf`/`gsF` find; `gsh` highlight; `gsr` replace; `gsn` update n_lines
@@ -75,5 +78,5 @@ Leader: `<Space>`
 
 ## Undo / misc
 - `<leader>u` toggle undo tree
-- Snacks: `<leader>z` zen; `<leader>Z` zoom; `<leader>.` scratch; `<leader>S` select scratch; `<leader>n` notification history; `<leader>un` dismiss notifications; `<c-/>` terminal toggle (also `<c-_>`); `]]`/`[[` next/prev reference
+- Snacks: `<leader>z` zen; `<leader>Z` zoom; `<leader>.` scratch; `<leader>S` select scratch; `<leader>n` notification history; `<leader>un` dismiss notifications; `<C-.>` terminal toggle (also `<c-_>`); `]]`/`[[` next/prev reference
 - Toggle options (Snacks): `<leader>us` spell; `<leader>uw` wrap; `<leader>uL` relative number; `<leader>ud` diagnostics; `<leader>ul` line numbers; `<leader>uc` conceal; `<leader>uT` treesitter; `<leader>ub` background; `<leader>uh` inlay hints

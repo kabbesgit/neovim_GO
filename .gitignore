@@ -3,3 +3,6 @@
 .nvimlog
 lazy-lock.json
 .stylua.toml
+.cache/GO
+.state
+log.txt

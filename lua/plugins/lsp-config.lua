@@ -68,6 +68,12 @@ return {
 
       configure('gopls', {
         root_dir = function(fname)
+          if type(fname) == 'number' then
+            fname = vim.api.nvim_buf_get_name(fname)
+          end
+          if not fname or fname == '' then
+            return vim.uv.cwd()
+          end
           return go_root(fname) or util.path.dirname(fname)
         end,
         settings = {
