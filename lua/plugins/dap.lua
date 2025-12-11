@@ -1,6 +1,50 @@
+local function ensure_go_defaults(dap)
+  if not dap then
+    return
+  end
+
+  -- Provide a Go adapter if none is registered yet
+  if not dap.adapters then
+    dap.adapters = {}
+  end
+  if not dap.adapters.go then
+    dap.adapters.go = {
+      type = "server",
+      port = "${port}",
+      executable = {
+        command = "dlv",
+        args = { "dap", "--listen", "127.0.0.1:${port}", "--log" },
+      },
+    }
+  end
+
+  -- Provide a minimal Go configuration if none exist
+  if not dap.configurations then
+    dap.configurations = {}
+  end
+  if not dap.configurations.go or vim.tbl_isempty(dap.configurations.go) then
+    dap.configurations.go = {
+      {
+        type = "go",
+        name = "Debug file",
+        request = "launch",
+        program = "${file}",
+        console = "internalConsole",
+      },
+      {
+        type = "go",
+        name = "Debug package",
+        request = "launch",
+        program = "${workspaceFolder}",
+        console = "internalConsole",
+      },
+    }
+  end
+end
+
 return {
   'rcarriga/nvim-dap-ui',
-  event = { 'BufReadPost', 'BufNewFile' },
+  ft = { 'go', 'gomod', 'gowork' },
   init = function()
     local function lazy_load(...)
       local plugins = { ... }
@@ -14,12 +58,14 @@ return {
 
     local function with_dap(callback)
       return function(...)
-        lazy_load('nvim-dap', 'nvim-dap-ui')
+        -- Load core DAP plugins plus Go adapter
+        lazy_load('nvim-dap', 'nvim-dap-ui', 'nvim-dap-go')
         local ok, dap = pcall(require, 'dap')
         if not ok then
           vim.notify('nvim-dap is not available', vim.log.levels.ERROR)
           return
         end
+        ensure_go_defaults(dap)
         return callback(dap, ...)
       end
     end
@@ -36,99 +82,116 @@ return {
       end
     end
 
-    local function map(lhs, rhs, desc, mode)
-      vim.keymap.set(mode or 'n', lhs, rhs, { desc = desc })
+    -- Buffer-local Go keymaps only
+    local function map_go_keys(bufnr)
+      local function buf(lhs, rhs, desc, mode)
+        vim.keymap.set(mode or 'n', lhs, rhs, { buffer = bufnr, desc = desc })
+      end
+
+      buf('<leader>db', with_dap(function(dap)
+        dap.toggle_breakpoint()
+      end), 'DAP: toggle breakpoint')
+
+      buf('<leader>dB', with_dap(function(dap)
+        dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
+      end), 'DAP: conditional breakpoint')
+
+      buf('<leader>dd', with_dap(function(dap)
+        dap.continue()
+      end), 'DAP: start/continue')
+
+      buf('<leader>dc', with_dap(function(dap)
+        dap.continue()
+      end), 'DAP: continue')
+
+      buf('<leader>dC', with_dap(function(dap)
+        dap.run_to_cursor()
+      end), 'DAP: run to cursor')
+
+      buf('<leader>ds', with_dap(function(dap)
+        dap.step_over()
+      end), 'DAP: step over')
+
+      buf('<leader>di', with_dap(function(dap)
+        dap.step_into()
+      end), 'DAP: step into')
+
+      buf('<leader>do', with_dap(function(dap)
+        dap.step_out()
+      end), 'DAP: step out')
+
+      buf('<leader>dr', with_dap(function(dap)
+        if dap.restart then
+          dap.restart()
+        else
+          dap.terminate()
+          dap.continue()
+        end
+      end), 'DAP: restart')
+
+      buf('<leader>dt', with_dap(function(dap)
+        dap.terminate()
+      end), 'DAP: terminate')
+
+      buf('<leader>du', with_dapui(function(dapui)
+        dapui.toggle()
+      end), 'DAP UI: toggle')
+
+      buf('<leader>de', with_dapui(function(dapui)
+        dapui.eval()
+      end), 'DAP: eval expression')
+
+      buf('<leader>de', with_dapui(function(dapui)
+        dapui.eval()
+      end), 'DAP: eval selection', 'v')
+
+      buf('<leader>dv', function()
+        lazy_load('nvim-dap', 'nvim-dap-ui', 'nvim-dap-virtual-text')
+        vim.cmd('DapVirtualTextToggle')
+      end, 'DAP: toggle virtual text')
+
+      -- F-key aliases (optional)
+      buf('<F5>', with_dap(function(dap)
+        dap.continue()
+      end), 'DAP: start/continue (F5)')
+
+      buf('<F9>', with_dap(function(dap)
+        dap.toggle_breakpoint()
+      end), 'DAP: toggle breakpoint (F9)')
+
+      buf('<F10>', with_dap(function(dap)
+        dap.step_over()
+      end), 'DAP: step over (F10)')
+
+      buf('<F11>', with_dap(function(dap)
+        dap.step_into()
+      end), 'DAP: step into (F11)')
+
+      buf('<S-F11>', with_dap(function(dap)
+        dap.step_out()
+      end), 'DAP: step out (S-F11)')
+
+      buf('<S-F5>', with_dap(function(dap)
+        if dap.restart then
+          dap.restart()
+        else
+          dap.terminate()
+          dap.continue()
+        end
+      end), 'DAP: restart (S-F5)')
+
+      buf('<C-F5>', with_dap(function(dap)
+        dap.terminate()
+      end), 'DAP: stop (C-F5)')
     end
 
-    map('<leader>db', with_dap(function(dap)
-      dap.toggle_breakpoint()
-    end), 'Toggle breakpoint')
-
-    map('<leader>dB', with_dap(function(dap)
-      dap.set_breakpoint(vim.fn.input('Breakpoint condition: '))
-    end), 'Conditional breakpoint')
-
-    map('<leader>dc', with_dap(function(dap)
-      dap.continue()
-    end), 'Continue')
-
-    map('<leader>dC', with_dap(function(dap)
-      dap.run_to_cursor()
-    end), 'Run to cursor')
-
-    map('<leader>ds', with_dap(function(dap)
-      dap.step_over()
-    end), 'Step over')
-
-    map('<leader>di', with_dap(function(dap)
-      dap.step_into()
-    end), 'Step into')
-
-    map('<leader>do', with_dap(function(dap)
-      dap.step_out()
-    end), 'Step out')
-
-    map('<leader>dr', with_dap(function(dap)
-      if dap.restart then
-        dap.restart()
-      else
-        dap.terminate()
-        dap.continue()
-      end
-    end), 'Restart')
-
-    map('<leader>dt', with_dap(function(dap)
-      dap.terminate()
-    end), 'Terminate')
-
-    map('<leader>du', with_dapui(function(dapui)
-      dapui.toggle()
-    end), 'Toggle DAP UI')
-
-    map('<leader>de', with_dapui(function(dapui)
-      dapui.eval()
-    end), 'Evaluate expression')
-    map('<leader>de', with_dapui(function(dapui)
-      dapui.eval()
-    end), 'Evaluate selection', 'v')
-
-    map('<leader>dv', function()
-      lazy_load('nvim-dap', 'nvim-dap-ui', 'nvim-dap-virtual-text')
-      vim.cmd('DapVirtualTextToggle')
-    end, 'Toggle DAP virtual text')
-
-    map('<F5>', with_dap(function(dap)
-      dap.continue()
-    end), 'Continue/Start debugging')
-
-    map('<F9>', with_dap(function(dap)
-      dap.toggle_breakpoint()
-    end), 'Toggle breakpoint')
-
-    map('<F10>', with_dap(function(dap)
-      dap.step_over()
-    end), 'Step over')
-
-    map('<F11>', with_dap(function(dap)
-      dap.step_into()
-    end), 'Step into')
-
-    map('<S-F11>', with_dap(function(dap)
-      dap.step_out()
-    end), 'Step out')
-
-    map('<S-F5>', with_dap(function(dap)
-      if dap.restart then
-        dap.restart()
-      else
-        dap.terminate()
-        dap.continue()
-      end
-    end), 'Restart debugging')
-
-    map('<C-F5>', with_dap(function(dap)
-      dap.terminate()
-    end), 'Stop debugging')
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("GoDapKeymaps", { clear = true }),
+      pattern = { "go", "gomod", "gowork" },
+      callback = function(event)
+        map_go_keys(event.buf)
+      end,
+    })
   end,
   dependencies = {
     'mfussenegger/nvim-dap',
@@ -140,6 +203,9 @@ return {
     local dap = require("dap")
     local dapui = require("dapui")
     local dap_virtual_text = require("nvim-dap-virtual-text")
+
+    -- Use Neovim split for runInTerminal requests (if an adapter asks for it)
+    dap.defaults.fallback.terminal_win_cmd = "belowright 15split | terminal"
 
     -- Setup DAP UI
     dapui.setup({
@@ -250,6 +316,16 @@ return {
         detached = vim.fn.has("win32") == 0,
         cwd = nil,
       },
+    })
+
+    -- Ensure Go adapter/configs exist (in case dap-go didn't populate yet)
+    ensure_go_defaults(dap)
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("GoDapConfig", { clear = true }),
+      pattern = "go",
+      callback = function()
+        ensure_go_defaults(dap)
+      end,
     })
 
     -- Auto open/close DAP UI

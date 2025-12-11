@@ -1,4 +1,4 @@
-# Keymaps
+# Keymaps GO Cheat Sheet
 
 Leader: `<Space>`
 
@@ -57,12 +57,12 @@ Leader: `<Space>`
 - `<leader>tc` nearest test; `<leader>tf` file tests; `<leader>ta` all tests (cwd)
 - `<leader>ts` summary; `<leader>to` output; `<leader>tS` stop
 
-## Debugging (DAP)
+## Debugging (DAP, Go-only buffers)
 - `<leader>db` toggle breakpoint; `<leader>dB` conditional
-- `<leader>dc` continue; `<leader>dC` run to cursor
+- `<leader>dd` start/continue; `<leader>dc` continue; `<leader>dC` run to cursor
 - `<leader>ds`/`di`/`do` step over/into/out; `<leader>dr` restart; `<leader>dt` terminate
 - `<leader>du` toggle UI; `<leader>de` eval (n/v); `<leader>dv` toggle virtual text
-- `<F5>` continue; `<F9>` breakpoint; `<F10>` step over; `<F11>` step into; `<S-F11>` step out; `<S-F5>` restart; `<C-F5>` stop
+- `<leader>dd` or `<F5>` continue; `<F9>` breakpoint; `<F10>` step over; `<F11>` step into; `<S-F11>` step out; `<S-F5>` restart; `<C-F5>` stop
 
 ## Editing aids
 - Fusen sticky notes: `me` add/edit, `mc` clear, `mC` clear buffer, `mD` clear all, `mn` next, `mp` prev, `ml` list

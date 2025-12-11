@@ -21,7 +21,11 @@ return {
     ---@module 'blink.cmp'
     opts = {
       -- See :h blink-cmp-config-keymap for defining your own keymap
-      keymap = { preset = 'enter' },
+      -- Use the default preset and explicitly disable <CR> so Enter never accepts a completion.
+      keymap = {
+        preset = 'default',
+        ['<CR>'] = false,
+      },
 
       appearance = {
         nerd_font_variant = 'mono',
